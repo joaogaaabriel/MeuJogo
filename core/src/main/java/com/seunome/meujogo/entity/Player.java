@@ -8,8 +8,8 @@ public class Player {
     public float x = 100;
     public float y = 100;
     public float speed = 200;
-    public float width = 32;
-    public float height = 32;
+    public float width = 64;
+    public float height = 64;
 
     public void update(float delta) {
 

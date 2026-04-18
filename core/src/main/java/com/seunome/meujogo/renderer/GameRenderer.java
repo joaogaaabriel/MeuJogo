@@ -3,8 +3,10 @@ package com.seunome.meujogo.renderer;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.seunome.meujogo.entity.Asteroid;
 import com.seunome.meujogo.entity.Player;
+import com.seunome.meujogo.starts.MenuStars;
 
 import java.util.List;
 
@@ -14,6 +16,8 @@ public class GameRenderer {
 
     private final OrthographicCamera camera;
     private final SpriteBatch batch;
+    private final ShapeRenderer shape;
+    private final MenuStars stars;
 
     private Texture playerTexture;
     private Texture asteroidTexture;
@@ -25,16 +29,27 @@ public class GameRenderer {
         camera.update();
 
         batch = new SpriteBatch();
+        shape = new ShapeRenderer();
+
+        stars = new MenuStars(70);
+        stars.init(screenWidth, screenHeight);
 
         playerTexture = new Texture("nave.png");
         asteroidTexture = new Texture("asteroide.png");
         goalTexture = new Texture("marte.png");
     }
 
+    public void update(float delta, float width, float height) {
+        stars.update(delta, width, height);
+    }
+
     public void draw(Player player, List<Asteroid> asteroids,
                      boolean goalActive, float goalX, float goalY, float goalSize) {
 
         camera.update();
+
+        drawStars();
+
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
 
@@ -46,6 +61,20 @@ public class GameRenderer {
         drawPlayer(player);
 
         batch.end();
+    }
+
+    private void drawStars() {
+        shape.begin(ShapeRenderer.ShapeType.Filled);
+
+        for (int i = 0; i < stars.getStarCount(); i++) {
+            float size = stars.getStarSize(i);
+            float brightness = 0.5f + size * 0.15f;
+
+            shape.setColor(brightness, brightness, brightness + 0.1f, 1f);
+            shape.rect(stars.getStarX(i), stars.getStarY(i), size, size);
+        }
+
+        shape.end();
     }
 
     private void drawPlayer(Player player) {
@@ -92,10 +121,12 @@ public class GameRenderer {
         camera.setToOrtho(false, width, height);
         camera.position.set(width / 2f, height / 2f, 0f);
         camera.update();
+        stars.init(width, height);
     }
 
     public void dispose() {
         batch.dispose();
+        shape.dispose();
 
         if (playerTexture != null) {
             playerTexture.dispose();
