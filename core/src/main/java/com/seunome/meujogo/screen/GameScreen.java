@@ -10,30 +10,35 @@ import com.seunome.meujogo.renderer.GameRenderer;
 
 public class GameScreen implements Screen {
 
-    private static final float GOAL_X      = 500f;
-    private static final float GOAL_Y      = 300f;
-    private static final float GOAL_SIZE   = 50f;
-    private static final float RESET_DELAY = 2f;
+    private static final float RESET_DELAY    = 3f;
+    private static final float GOAL_SPAWN_TIME = 20f;
+    private static final float GOAL_SIZE       = 50f;
+    private static final float GOAL_SPEED      = 150f;
 
-    private Player            player;
-    private AsteroidManager   asteroidManager;
-    private CollisionManager  collisionManager;
-    private GameRenderer      renderer;
+    private Player           player;
+    private AsteroidManager  asteroidManager;
+    private CollisionManager collisionManager;
+    private GameRenderer     renderer;
 
     private float   resetTimer;
     private boolean gameOver;
     private boolean venceu;
 
+    private float   goalX;
+    private float   goalY;
+    private float   goalTimer;
+    private boolean goalActive;
+
     @Override
     public void show() {
         asteroidManager  = new AsteroidManager();
         collisionManager = new CollisionManager();
-        renderer         = new GameRenderer();
+        renderer = new GameRenderer(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         initGame();
     }
 
     private void initGame() {
-        player = new Player();
+        player   = new Player();
         player.x = Gdx.graphics.getWidth() / 2f;
         player.y = 50f;
 
@@ -42,6 +47,11 @@ public class GameScreen implements Screen {
         resetTimer = 0f;
         gameOver   = false;
         venceu     = false;
+
+        goalActive = false;
+        goalTimer  = 0f;
+        goalX      = 0f;
+        goalY      = 0f;
     }
 
     @Override
@@ -54,24 +64,59 @@ public class GameScreen implements Screen {
             if (resetTimer >= RESET_DELAY) {
                 initGame();
             }
+            renderer.draw(player, asteroidManager.getAsteroids(), goalActive, goalX, goalY, GOAL_SIZE);
             return;
         }
 
+        update(delta);
+        renderer.draw(player, asteroidManager.getAsteroids(), goalActive, goalX, goalY, GOAL_SIZE);
+    }
+
+    private void update(float delta) {
         player.update(delta);
         asteroidManager.update(delta);
+
+        goalTimer += delta;
+
+        if (!goalActive && goalTimer >= GOAL_SPAWN_TIME) {
+            spawnGoal();
+        }
+
+        if (goalActive) {
+            goalY -= GOAL_SPEED * delta;
+
+            if (goalY < -GOAL_SIZE) {
+                goalActive = false;
+                gameOver   = true;
+                System.out.println("PERDEU! NAO PEGOU O OBJETIVO");
+                return;
+            }
+
+            if (collisionManager.reachedGoal(player, goalX, goalY, GOAL_SIZE)) {
+                goalActive = false;
+                venceu     = true;
+                System.out.println("VOCE VENCEU!");
+                return;
+            }
+        }
 
         if (collisionManager.collidedWithAsteroid(player, asteroidManager.getAsteroids())) {
             gameOver = true;
             System.out.println("GAME OVER!");
-        } else if (collisionManager.reachedGoal(player, GOAL_X, GOAL_Y, GOAL_SIZE)) {
-            venceu = true;
-            System.out.println("VOCÊ VENCEU!");
         }
-
-        renderer.draw(player, asteroidManager.getAsteroids(), GOAL_X, GOAL_Y, GOAL_SIZE);
     }
 
-    @Override public void resize(int width, int height) {}
+    private void spawnGoal() {
+        goalX      = (float) (Math.random() * (Gdx.graphics.getWidth() - GOAL_SIZE));
+        goalY      = Gdx.graphics.getHeight();
+        goalActive = true;
+        goalTimer  = 0f;
+    }
+
+    @Override
+        public void resize(int width, int height) {
+        renderer.resize(width, height);
+    }
     @Override public void pause() {}
     @Override public void resume() {}
     @Override public void hide() {}
