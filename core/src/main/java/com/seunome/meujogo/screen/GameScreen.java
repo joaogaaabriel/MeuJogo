@@ -1,8 +1,10 @@
 package com.seunome.meujogo.screen;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
+import com.seunome.meujogo.MainGame;
 import com.seunome.meujogo.entity.Player;
 import com.seunome.meujogo.manager.AsteroidManager;
 import com.seunome.meujogo.manager.CollisionManager;
@@ -10,61 +12,69 @@ import com.seunome.meujogo.renderer.GameRenderer;
 
 public class GameScreen implements Screen {
 
-    private static final float RESET_DELAY    = 3f;
+    private static final float MENU_RETURN_DELAY = 3f;
     private static final float GOAL_SPAWN_TIME = 20f;
-    private static final float GOAL_SIZE       = 50f;
-    private static final float GOAL_SPEED      = 150f;
+    private static final float GOAL_SIZE = 50f;
+    private static final float GOAL_SPEED = 150f;
 
-    private Player           player;
-    private AsteroidManager  asteroidManager;
+    private final MainGame game;
+    private Player player;
+    private AsteroidManager asteroidManager;
     private CollisionManager collisionManager;
-    private GameRenderer     renderer;
+    private GameRenderer renderer;
 
-    private float   resetTimer;
+    private float endTimer;
     private boolean gameOver;
     private boolean venceu;
 
-    private float   goalX;
-    private float   goalY;
-    private float   goalTimer;
+    private float goalX;
+    private float goalY;
+    private float goalTimer;
     private boolean goalActive;
+
+    public GameScreen(MainGame game) {
+        this.game = game;
+    }
 
     @Override
     public void show() {
-        asteroidManager  = new AsteroidManager();
+        asteroidManager = new AsteroidManager();
         collisionManager = new CollisionManager();
         renderer = new GameRenderer(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         initGame();
     }
 
     private void initGame() {
-        player   = new Player();
+        player = new Player();
         player.x = Gdx.graphics.getWidth() / 2f;
         player.y = 50f;
 
         asteroidManager.reset();
 
-        resetTimer = 0f;
-        gameOver   = false;
-        venceu     = false;
+        endTimer = 0f;
+        gameOver = false;
+        venceu = false;
 
         goalActive = false;
-        goalTimer  = 0f;
-        goalX      = 0f;
-        goalY      = 0f;
+        goalTimer = 0f;
+        goalX = 0f;
+        goalY = 0f;
     }
 
     @Override
     public void render(float delta) {
-        Gdx.gl.glClearColor(0, 0, 0, 1);
+        Gdx.gl.glClearColor(0f, 0f, 0f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         if (gameOver || venceu) {
-            resetTimer += delta;
-            if (resetTimer >= RESET_DELAY) {
-                initGame();
-            }
+            endTimer += delta;
+
             renderer.draw(player, asteroidManager.getAsteroids(), goalActive, goalX, goalY, GOAL_SIZE);
+
+            if (endTimer >= MENU_RETURN_DELAY) {
+                game.setScreen(new MenuScreen(game));
+            }
+
             return;
         }
 
@@ -73,6 +83,11 @@ public class GameScreen implements Screen {
     }
 
     private void update(float delta) {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
+            game.setScreen(new MenuScreen(game));
+            return;
+        }
+
         player.update(delta);
         asteroidManager.update(delta);
 
@@ -87,14 +102,16 @@ public class GameScreen implements Screen {
 
             if (goalY < -GOAL_SIZE) {
                 goalActive = false;
-                gameOver   = true;
+                gameOver = true;
+                endTimer = 0f;
                 System.out.println("PERDEU! NAO PEGOU O OBJETIVO");
                 return;
             }
 
             if (collisionManager.reachedGoal(player, goalX, goalY, GOAL_SIZE)) {
                 goalActive = false;
-                venceu     = true;
+                venceu = true;
+                endTimer = 0f;
                 System.out.println("VOCE VENCEU!");
                 return;
             }
@@ -102,27 +119,42 @@ public class GameScreen implements Screen {
 
         if (collisionManager.collidedWithAsteroid(player, asteroidManager.getAsteroids())) {
             gameOver = true;
+            endTimer = 0f;
             System.out.println("GAME OVER!");
         }
     }
 
     private void spawnGoal() {
-        goalX      = (float) (Math.random() * (Gdx.graphics.getWidth() - GOAL_SIZE));
-        goalY      = Gdx.graphics.getHeight();
+        goalX = (float) (Math.random() * (Gdx.graphics.getWidth() - GOAL_SIZE));
+        goalY = Gdx.graphics.getHeight();
         goalActive = true;
-        goalTimer  = 0f;
+        goalTimer = 0f;
     }
 
     @Override
-        public void resize(int width, int height) {
-        renderer.resize(width, height);
+    public void resize(int width, int height) {
+        if (renderer != null) {
+            renderer.resize(width, height);
+        }
     }
-    @Override public void pause() {}
-    @Override public void resume() {}
-    @Override public void hide() {}
+
+    @Override
+    public void pause() {
+    }
+
+    @Override
+    public void resume() {
+    }
+
+    @Override
+    public void hide() {
+    }
 
     @Override
     public void dispose() {
-        renderer.dispose();
+        if (renderer != null) {
+            renderer.dispose();
+            renderer = null;
+        }
     }
 }
