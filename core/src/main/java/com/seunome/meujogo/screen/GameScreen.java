@@ -12,6 +12,7 @@ import com.seunome.meujogo.renderer.GameRenderer;
 
 public class GameScreen implements Screen {
 
+    private static final String TAG = "GameScreen";
     private static final float MENU_RETURN_DELAY = 3f;
     private static final float GOAL_SPAWN_TIME = 20f;
     private static final float GOAL_SIZE = 50f;
@@ -68,7 +69,6 @@ public class GameScreen implements Screen {
 
         if (gameOver || venceu) {
             endTimer += delta;
-
             renderer.draw(player, asteroidManager.getAsteroids(), goalActive, goalX, goalY, GOAL_SIZE);
 
             if (endTimer >= MENU_RETURN_DELAY) {
@@ -104,7 +104,7 @@ public class GameScreen implements Screen {
                 goalActive = false;
                 gameOver = true;
                 endTimer = 0f;
-                System.out.println("PERDEU! NAO PEGOU O OBJETIVO");
+                Gdx.app.log(TAG, "Derrota: objetivo nao coletado.");
                 return;
             }
 
@@ -112,7 +112,7 @@ public class GameScreen implements Screen {
                 goalActive = false;
                 venceu = true;
                 endTimer = 0f;
-                System.out.println("VOCE VENCEU!");
+                Gdx.app.log(TAG, "Vitoria!");
                 return;
             }
         }
@@ -120,7 +120,7 @@ public class GameScreen implements Screen {
         if (collisionManager.collidedWithAsteroid(player, asteroidManager.getAsteroids())) {
             gameOver = true;
             endTimer = 0f;
-            System.out.println("GAME OVER!");
+            Gdx.app.log(TAG, "Game over: colisao com asteroide.");
         }
     }
 

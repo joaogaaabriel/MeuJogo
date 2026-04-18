@@ -11,11 +11,13 @@ public class MenuPanelRenderer {
     private final ShapeRenderer shape;
     private final BitmapFont fontTitulo;
     private final BitmapFont fontNormal;
+    private final GlyphLayout layout;
 
     public MenuPanelRenderer(MainGame game) {
         this.game = game;
 
         shape = new ShapeRenderer();
+        layout = new GlyphLayout();
 
         fontTitulo = new BitmapFont();
         fontTitulo.getData().setScale(2.2f);
@@ -121,7 +123,7 @@ public class MenuPanelRenderer {
     }
 
     private void drawCenteredText(BitmapFont font, String text, float centerX, float y) {
-        GlyphLayout layout = new GlyphLayout(font, text);
+        layout.setText(font, text);
         font.draw(game.batch, text, centerX - layout.width / 2f, y);
     }
 

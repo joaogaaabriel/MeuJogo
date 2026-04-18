@@ -21,14 +21,14 @@ public class GameRenderer {
 
     public GameRenderer(int screenWidth, int screenHeight) {
         camera = new OrthographicCamera(screenWidth, screenHeight);
+        camera.position.set(screenWidth / 2f, screenHeight / 2f, 0f);
+        camera.update();
+
         batch = new SpriteBatch();
 
         playerTexture = new Texture("nave.png");
         asteroidTexture = new Texture("asteroide.png");
         goalTexture = new Texture("marte.png");
-
-        camera.position.set(screenWidth / 2f, screenHeight / 2f, 0f);
-        camera.update();
     }
 
     public void draw(Player player, List<Asteroid> asteroids,
@@ -36,7 +36,6 @@ public class GameRenderer {
 
         camera.update();
         batch.setProjectionMatrix(camera.combined);
-
         batch.begin();
 
         if (goalActive) {

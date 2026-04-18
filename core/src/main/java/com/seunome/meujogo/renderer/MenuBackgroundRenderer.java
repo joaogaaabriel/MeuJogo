@@ -16,24 +16,25 @@ public class MenuBackgroundRenderer {
     public void draw(float width, float height, float pulse) {
         shape.begin(ShapeRenderer.ShapeType.Filled);
 
-        drawStars();
-        drawPath(width, height);
+        drawStars(pulse);
+        drawPath(width, height, pulse);
 
         shape.end();
     }
 
-    private void drawStars() {
+    private void drawStars(float pulse) {
         for (int i = 0; i < stars.getStarCount(); i++) {
             float size = stars.getStarSize(i);
-            float brightness = 0.5f + size * 0.15f;
+            float brightness = 0.5f + size * 0.15f + pulse * 0.05f;
 
             shape.setColor(brightness, brightness, brightness + 0.1f, 1f);
             shape.rect(stars.getStarX(i), stars.getStarY(i), size, size);
         }
     }
 
-    private void drawPath(float width, float height) {
-        shape.setColor(0.3f, 0.6f, 1f, 0.18f);
+    private void drawPath(float width, float height, float pulse) {
+        float alpha = 0.12f + pulse * 0.08f;
+        shape.setColor(0.3f, 0.6f, 1f, alpha);
 
         for (int i = 0; i < 14; i++) {
             float t = (float) i / 14f;

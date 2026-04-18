@@ -9,6 +9,7 @@ import com.seunome.meujogo.renderer.MenuBackgroundRenderer;
 import com.seunome.meujogo.renderer.MenuPanelRenderer;
 import com.seunome.meujogo.starts.MenuStars;
 
+
 public class MenuScreen implements Screen {
 
     private final MainGame game;
@@ -84,5 +85,7 @@ public class MenuScreen implements Screen {
             panelRenderer.dispose();
             panelRenderer = null;
         }
+
+        stars = null;
     }
 }
