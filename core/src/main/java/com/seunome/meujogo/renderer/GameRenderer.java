@@ -3,7 +3,6 @@ package com.seunome.meujogo.renderer;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.seunome.meujogo.entity.Asteroid;
 import com.seunome.meujogo.entity.Player;
 
@@ -11,19 +10,22 @@ import java.util.List;
 
 public class GameRenderer {
 
-    private static final float PLAYER_WIDTH  = 32f;
-    private static final float PLAYER_HEIGHT = 32f;
+    private static final float PLAYER_WIDTH  = 64f;
+    private static final float PLAYER_HEIGHT = 64f;
+    private static final float GOAL_ROTATION = 45f;
 
     private final OrthographicCamera camera;
     private final SpriteBatch        batch;
-    private final ShapeRenderer      shape;
     private final Texture            playerTexture;
+    private final Texture            asteroidTexture;
+    private final Texture            goalTexture;
 
     public GameRenderer(int screenWidth, int screenHeight) {
-        camera        = new OrthographicCamera(screenWidth, screenHeight);
-        batch         = new SpriteBatch();
-        shape         = new ShapeRenderer();
-        playerTexture = new Texture("libgdx.png");
+        camera          = new OrthographicCamera(screenWidth, screenHeight);
+        batch           = new SpriteBatch();
+        playerTexture   = new Texture("nave.png");
+        asteroidTexture = new Texture("asteroide.png");
+        goalTexture     = new Texture("marte.png");
 
         camera.position.set(screenWidth / 2f, screenHeight / 2f, 0);
         camera.update();
@@ -37,40 +39,58 @@ public class GameRenderer {
     public void draw(Player player, List<Asteroid> asteroids,
                      boolean goalActive, float goalX, float goalY, float goalSize) {
         camera.update();
-
-        shape.setProjectionMatrix(camera.combined);
         batch.setProjectionMatrix(camera.combined);
 
-        drawShapes(asteroids, goalActive, goalX, goalY, goalSize);
-        drawPlayer(player);
-    }
-
-    private void drawShapes(List<Asteroid> asteroids,
-                             boolean goalActive, float goalX, float goalY, float goalSize) {
-        shape.begin(ShapeRenderer.ShapeType.Filled);
+        batch.begin();
 
         if (goalActive) {
-            shape.setColor(0, 1, 0, 1);
-            shape.rect(goalX, goalY, goalSize, goalSize);
+            drawGoal(goalX, goalY, goalSize);
         }
 
-        shape.setColor(1, 0, 0, 1);
+        drawAsteroids(asteroids);
+        drawPlayer(player);
+
+        batch.end();
+    }
+
+    private void drawGoal(float goalX, float goalY, float goalSize) {
+        batch.draw(
+            goalTexture,
+            goalX, goalY,
+            goalSize / 2f, goalSize / 2f,
+            goalSize, goalSize,
+            1f, 1f,
+            GOAL_ROTATION,
+            0, 0,
+            goalTexture.getWidth(), goalTexture.getHeight(),
+            false, false
+        );
+    }
+
+    private void drawAsteroids(List<Asteroid> asteroids) {
         for (Asteroid a : asteroids) {
-            shape.rect(a.x, a.y, a.width, a.height);
+            batch.draw(
+                asteroidTexture,
+                a.x, a.y,
+                a.width  / 2f, a.height / 2f,
+                a.width, a.height,
+                1f, 1f,
+                a.rotation,
+                0, 0,
+                asteroidTexture.getWidth(), asteroidTexture.getHeight(),
+                false, false
+            );
         }
-
-        shape.end();
     }
 
     private void drawPlayer(Player player) {
-        batch.begin();
         batch.draw(playerTexture, player.x, player.y, PLAYER_WIDTH, PLAYER_HEIGHT);
-        batch.end();
     }
 
     public void dispose() {
         batch.dispose();
-        shape.dispose();
         playerTexture.dispose();
+        asteroidTexture.dispose();
+        goalTexture.dispose();
     }
 }
